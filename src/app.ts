@@ -1,19 +1,30 @@
-import express, { Request, Response, NextFunction } from "express";
-import fileUpload, { FileArray, UploadedFile } from "express-fileupload";
-import path from "path";
-import http from "http";
-import { verifyApiKey } from "./middleware/authValidaters";
-import { filesPayloadExists } from "./middleware/filesPayloadExists";
-import { fileSizeLimiter } from "./middleware/fileSizeLimiter";
+import express, {
+  Application,
+  Request,
+  Response,
+  NextFunction,
+  ErrorRequestHandler,
+} from "express";
+import http, { Server } from "http";
 import bodyParser from "body-parser";
-import cookieParser from "cookie-parser";
 import compression from "compression";
+import cookieParser from "cookie-parser";
+import { verifyApiKey } from "./middleware/authValidaters";
+import { fileSizeLimiter } from "./middleware/fileSizeLimiter";
+import { filesPayloadExists } from "./middleware/filesPayloadExists";
+import fileUpload, { FileArray, UploadedFile } from "express-fileupload";
 import cors from "cors";
-import multer from "multer";
+import path from "path";
+import { config } from "dotenv";
 
-const PORT = process.env.PORT || 8080;
+config();
 
-const app = express();
+import createHttpError from "http-errors";
+
+const PORT: Number = Number(process.env.PORT) || 8080;
+
+const app: Application = express();
+const server: Server = http.createServer(app);
 
 app.use(
   cors({
@@ -26,10 +37,8 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
-const server = http.createServer(app);
-
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.json({ message: "hello world" });
 });
 
 app.post(
@@ -56,7 +65,7 @@ app.post(
     Object.keys(files).forEach((key) => {
       const file: UploadedFile = files[key] as UploadedFile;
       const filename = `${Date.now()}-${file.name}`;
-      const relativePath = path.join("uploads",body.path, filename);
+      const relativePath = path.join("uploads", body.path, filename);
 
       const filepath = path.join(__dirname, "../", relativePath);
 
@@ -76,6 +85,19 @@ app.post(
   }
 );
 
+app.use((req: Request, res: Response, next: NextFunction) => {
+  next(new createHttpError.NotFound());
+});
+
+const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+  res.status(err.status || 500);
+  res.send({
+    status: err.status || 500,
+    message: err.message,
+  });
+};
+
+app.use(errorHandler);
 server.listen(PORT, () =>
   console.log(`Server running on http://localhost:${PORT}`)
 );

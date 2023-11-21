@@ -1,15 +1,27 @@
 {
   "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "CommonJS",
+    "target": "ES6",
+    "moduleResolution": "Node",
     "baseUrl": "src",
-    "outDir": "dist",
+
+    // root dir options
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+
     "sourceMap": true,
     "noImplicitAny": true,
+    "allowSyntheticDefaultImports": true,
     "paths": {
       "@/*": ["./src/*"],
       "@/middleware*": ["./src/middleware*"]
     }
   },
-  "include": ["src/**/*"]
+
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules", "dist", "coverage"]
 }

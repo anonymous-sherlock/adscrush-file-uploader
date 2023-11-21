@@ -4,11 +4,11 @@
 
 ### Author Links
 
-👋 Hello, I'm Dave Gray.
+👋 Hello, I'm Akash Layal.
+ 
+✅ [Check out the YouTube Channel of dave gray to get more understanding](https://www.youtube.com/DaveGrayTeachesCode).
 
-✅ [Check out my YouTube Channel with all of my tutorials](https://www.youtube.com/DaveGrayTeachesCode).
-
-🚩 [Subscribe to my channel](https://bit.ly/3nGHmNn)
+🚩 [Subscribe to his channel](https://bit.ly/3nGHmNn)
 
 ☕ [Buy Me A Coffee](https://buymeacoffee.com/DaveGray)
 
