@@ -20,6 +20,7 @@ import { config } from "dotenv";
 config();
 
 import createHttpError from "http-errors";
+import { handleFileUpload } from "./lib/handleFileUpload ";
 
 const PORT: number = Number(process.env.PORT) || 8080;
 
@@ -52,7 +53,6 @@ app.post(
   (req: Request, res: Response) => {
     const files: FileArray | undefined = req.files!;
     const body = req.body;
-    console.log(body);
 
     if (!files) {
       return res.json({
@@ -62,24 +62,11 @@ app.post(
       });
     }
 
-    const uploadedFiles: string[] = [];
-
-    Object.keys(files).forEach((key) => {
+    const uploadedFiles: string[] = Object.keys(files).map((key) => {
       const file: UploadedFile = files[key] as UploadedFile;
-
-      const remotePath = body.path ? path.join("uploads", body.path) : "uploads";
-      const filename = `${Date.now()}-${file.name}`;
-      const relativePath = path.join(remotePath, filename);
-
-      const filepath = path.join(__dirname, "../", relativePath);
-
-      file.mv(filepath, (err) => {
-        if (err) return res.status(500).json({ status: "error", message: err });
-      });
-
-      // Push the relative path to the array
-      uploadedFiles.push(relativePath);
+      return handleFileUpload(file, body);
     });
+
 
     return res.json({
       status: "success",

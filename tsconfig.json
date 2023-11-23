@@ -15,11 +15,7 @@
 
     "sourceMap": true,
     "noImplicitAny": true,
-    "allowSyntheticDefaultImports": true,
-    "paths": {
-      "@/*": ["./src/*"],
-      "@/middleware*": ["./src/middleware*"]
-    }
+    "allowSyntheticDefaultImports": true
   },
 
   "include": ["./src/**/*"],
