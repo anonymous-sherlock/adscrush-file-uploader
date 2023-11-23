@@ -21,7 +21,7 @@ config();
 
 import createHttpError from "http-errors";
 
-const PORT: Number = Number(process.env.PORT) || 8080;
+const PORT: number = Number(process.env.PORT) || 8080;
 
 const app: Application = express();
 const server: Server = http.createServer(app);
@@ -43,10 +43,12 @@ app.get("/", (req, res) => {
 
 app.post(
   "/upload",
-  fileUpload({ createParentPath: true }),
-  verifyApiKey,
-  filesPayloadExists,
-  fileSizeLimiter,
+  [
+    fileUpload({ createParentPath: true }),
+    verifyApiKey,
+    filesPayloadExists,
+    fileSizeLimiter,
+  ],
   (req: Request, res: Response) => {
     const files: FileArray | undefined = req.files!;
     const body = req.body;
@@ -64,8 +66,10 @@ app.post(
 
     Object.keys(files).forEach((key) => {
       const file: UploadedFile = files[key] as UploadedFile;
+
+      const remotePath = body.path ? path.join("uploads", body.path) : "uploads";
       const filename = `${Date.now()}-${file.name}`;
-      const relativePath = path.join("uploads", body.path, filename);
+      const relativePath = path.join(remotePath, filename);
 
       const filepath = path.join(__dirname, "../", relativePath);
 

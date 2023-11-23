@@ -45,8 +45,9 @@ app.post("/upload", (0, express_fileupload_1.default)({ createParentPath: true }
     const uploadedFiles = [];
     Object.keys(files).forEach((key) => {
         const file = files[key];
+        const remotePath = body.path ? path_1.default.join("uploads", body.path) : "uploads";
         const filename = `${Date.now()}-${file.name}`;
-        const relativePath = path_1.default.join("uploads", body.path, filename);
+        const relativePath = path_1.default.join(remotePath, filename);
         const filepath = path_1.default.join(__dirname, "../", relativePath);
         file.mv(filepath, (err) => {
             if (err)
