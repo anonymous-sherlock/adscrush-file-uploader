@@ -1,94 +1,92 @@
-import express, {
-  Application,
-  Request,
-  Response,
-  NextFunction,
-  ErrorRequestHandler,
-} from "express";
-import http, { Server } from "http";
-import bodyParser from "body-parser";
-import compression from "compression";
-import cookieParser from "cookie-parser";
-import { verifyApiKey } from "./middleware/authValidaters";
-import { fileSizeLimiter } from "./middleware/fileSizeLimiter";
-import { filesPayloadExists } from "./middleware/filesPayloadExists";
-import fileUpload, { FileArray, UploadedFile } from "express-fileupload";
-import cors from "cors";
-import path from "path";
-import { config } from "dotenv";
+import express from 'express';
+import http from 'http';
+import cors from 'cors';
+import compression from 'compression';
+import cookieParser from 'cookie-parser';
+import bodyParser from 'body-parser';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { randomUUID } from 'crypto';
+import httpErrors from 'http-errors';
+import dotenv from 'dotenv';
+import { ValidationError } from './exceptions/uploadError';
+import { getUploadPath } from './libs/utils';
+import { verifyApiKey } from './middleware/authValidaters';
+import { handleUpload } from './middleware/uploadHandler';
 
-config();
+dotenv.config();
 
-import createHttpError from "http-errors";
-import { handleFileUpload } from "./lib/handleFileUpload ";
+const PORT: number | string = process.env.PORT || 5000;
+const app = express();
+const server = http.createServer(app);
 
-const PORT: number = Number(process.env.PORT) || 8080;
-
-const app: Application = express();
-const server: Server = http.createServer(app);
-
-app.use(
-  cors({
-    credentials: true,
-  })
-);
+app.use(cors({
+  credentials: true,
+}));
 app.use(compression());
 app.use(cookieParser());
 app.use(bodyParser.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.urlencoded({
+  extended: true,
+}));
 
-app.get("/", (req, res) => {
-  res.json({ message: "hello world" });
+app.get('/', (req, res, next) => {
+  res.status(200).json({success:'API Service Running'});
 });
 
-app.post(
-  "/upload",
-  [
-    fileUpload({ createParentPath: true }),
-    verifyApiKey,
-    filesPayloadExists,
-    fileSizeLimiter,
-  ],
-  (req: Request, res: Response) => {
-    const files: FileArray | undefined = req.files!;
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
     const body = req.body;
-
-    if (!files) {
-      return res.json({
-        success: false,
-        status: "error",
-        message: "No files provided",
-      });
-    }
-
-    const uploadedFiles: string[] = Object.keys(files).map((key) => {
-      const file: UploadedFile = files[key] as UploadedFile;
-      return handleFileUpload(file, body);
+    const fieldName = file.fieldname || 'files';
+    const uploadPath = getUploadPath(body, fieldName);
+    fs.mkdir(uploadPath, { recursive: true }, (err) => {
+      if (err) {
+        return;
+      } else {
+        cb(null, uploadPath);
+      }
     });
-
-
-    return res.json({
-      status: "success",
-      message: "Files uploaded successfully",
-      data: uploadedFiles,
-    });
-  }
-);
-
-app.use((req: Request, res: Response, next: NextFunction) => {
-  next(new createHttpError.NotFound());
+  },
+  filename: (req, file, cb) => {
+    const fileName = file.originalname.toLowerCase().split(' ').join('-');
+    cb(null, randomUUID().replace(/-/g, '') + '-' + fileName);
+  },
 });
 
-const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
-  res.status(err.status || 500);
-  res.send({
-    status: err.status || 500,
-    message: err.message,
+const upload = multer({
+  storage: storage,
+  dest: 'uploads/',
+  limits: { fileSize: 5 * 1024 * 1024 }, // 50MB File Size Limit
+  fileFilter: (req, file, cb) => {
+    // Check if the file is an executable
+    const isExecutable = /\.(exe|bat|cmd|msi|ts)$/i.test(file.originalname);
+    if (isExecutable) {
+      return cb(new ValidationError('Executable files are not allowed.', 403));
+    } else {
+      return cb(null, true);
+    }
+  },
+}).fields([{ name: 'files' }, { name: 'aadharUploader' }, { name: 'documentsUploader' }]);
+
+app.post('/upload', verifyApiKey, (req, res, next) => {
+  upload(req, res, function (err) {
+    const files = req.files;
+    handleUpload(req, res, err);
   });
+});
+
+app.use((req, res, next) => {
+  next(new httpErrors.NotFound());
+});
+
+// Error handling middleware for handling uncaught errors
+const errorHandler = (err: any, req: any, res: any, next: any) => {
+  res.status(500).json({ success: false, status: 'error', message: err.message || 'Internal server error' });
 };
 
 app.use(errorHandler);
-server.listen(PORT, () =>
-  console.log(`Server running on http://localhost:${PORT}`)
-);
+
+server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
