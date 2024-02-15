@@ -4,22 +4,12 @@
 
 ### Author Links
 
-👋 Hello, I'm Akash Layal.
- 
-✅ [Check out the YouTube Channel of dave gray to get more understanding](https://www.youtube.com/DaveGrayTeachesCode).
+👋 Hello, I'm Anonymous Sherlock.
 
-🚩 [Subscribe to his channel](https://bit.ly/3nGHmNn)
+
+🚩 [Subscribe to Dave's channel his channel](https://bit.ly/3nGHmNn)
 
 ☕ [Buy Me A Coffee](https://buymeacoffee.com/DaveGray)
-
-🚀 Follow Me:
-
-- [Twitter](https://twitter.com/yesdavidgray)
-- [LinkedIn](https://www.linkedin.com/in/davidagray/)
-- [Blog](https://yesdavidgray.com)
-- [Reddit](https://www.reddit.com/user/DaveOnEleven)
-
----
 
 ### Description
 
