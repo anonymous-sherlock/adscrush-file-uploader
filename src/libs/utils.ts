@@ -28,6 +28,8 @@ export const getUploadPath = (body: { path?: string } | undefined, fieldName: st
     const basePath = path.join("uploads", body?.path || "");
 
     switch (fieldName) {
+        case "crm":
+            return path.join(basePath, "crm", "files");
         case "aadharUploader":
             return path.join(basePath, "documents", "aadhar");
         case "documentsUploader":

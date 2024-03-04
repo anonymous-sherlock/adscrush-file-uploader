@@ -32,7 +32,7 @@ app.use(express.urlencoded({
 }));
 
 app.get('/', (req, res, next) => {
-  res.status(200).json({success:'API Service Running'});
+  res.status(200).json({ success: 'API Service Running' });
 });
 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
@@ -69,7 +69,7 @@ const upload = multer({
       return cb(null, true);
     }
   },
-}).fields([{ name: 'files' }, { name: 'aadharUploader' }, { name: 'documentsUploader' }]);
+}).fields([{ name: 'crm' }, { name: 'files' }, { name: 'aadharUploader' }, { name: 'documentsUploader' }]);
 
 app.post('/upload', verifyApiKey, (req, res, next) => {
   upload(req, res, function (err) {
